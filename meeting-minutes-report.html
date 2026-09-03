@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minutes of Meeting</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='6' y='2' width='20' height='28' rx='2' fill='%231a3a5c'/><rect x='9' y='8' width='14' height='2' rx='1' fill='%23ffffff'/><rect x='9' y='13' width='14' height='2' rx='1' fill='%23ffffff'/><rect x='9' y='18' width='10' height='2' rx='1' fill='%23ffffff'/><rect x='9' y='23' width='7' height='2' rx='1' fill='%23cadbee'/></svg>" />
+  <style>
+    :root {
+      --navy: #1a3a5c;
+      --navy-dark: #132b45;
+      --accent: #2e6da4;
+      --accent-light: #eaf1f8;
+      --bg: #f4f6f9;
+      --white: #ffffff;
+      --text: #1f2328;
+      --muted: #57606a;
+      --border: #d2d8e0;
+      --amber: #f59e0b;
+      --green: #16a34a;
+      --row-alt: #f4f6f9;
+      --row-hover: #e8edf3;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .page {
+      max-width: 860px;
+      margin: 32px auto;
+      background: var(--white);
+      border-radius: 8px;
+      box-shadow: 0 2px 16px rgba(26,58,92,0.10);
+      overflow: hidden;
+    }
+
+    /* ── HEADER ── */
+    .report-header {
+      background: var(--navy);
+      color: var(--white);
+      padding: 36px 40px 28px;
+    }
+    .report-badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: #fff;
+      padding: 3px 10px;
+      border-radius: 3px;
+      margin-bottom: 12px;
+    }
+    .report-company {
+      font-size: 12px;
+      color: rgba(255,255,255,0.65);
+      margin-bottom: 6px;
+      letter-spacing: 0.3px;
+    }
+    .report-title {
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      line-height: 1.2;
+    }
+    .report-meta {
+      font-size: 12px;
+      color: rgba(255,255,255,0.75);
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .report-meta span::before { content: ''; }
+
+    /* ── BODY ── */
+    .report-body { padding: 32px 40px; }
+
+    .section { margin-bottom: 32px; page-break-inside: avoid; }
+
+    .section-heading {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--navy);
+      border-bottom: 2px solid var(--accent);
+      padding-bottom: 7px;
+      margin-bottom: 16px;
+    }
+
+    /* Attendees */
+    .attendees-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      list-style: none;
+    }
+    .attendee-chip {
+      background: var(--accent-light);
+      color: var(--navy);
+      border: 1px solid #c3d9ee;
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    /* Summary */
+    .summary-text {
+      color: var(--text);
+      line-height: 1.75;
+      background: var(--row-alt);
+      border-left: 4px solid var(--accent);
+      padding: 14px 18px;
+      border-radius: 0 6px 6px 0;
+    }
+
+    /* Decisions */
+    .decisions-list { list-style: none; counter-reset: decision-counter; }
+    .decisions-list li {
+      counter-increment: decision-counter;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .decisions-list li:last-child { border-bottom: none; }
+    .decision-num {
+      flex-shrink: 0;
+      width: 26px;
+      height: 26px;
+      background: var(--navy);
+      color: #fff;
+      border-radius: 50%;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1px;
+    }
+    .decision-text { flex: 1; line-height: 1.5; }
+
+    /* Action Items Table */
+    .table-wrapper { overflow-x: auto; }
+    .action-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .action-table thead tr {
+      background: var(--navy);
+      color: var(--white);
+    }
+    .action-table thead th {
+      padding: 11px 14px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 12px;
+      letter-spacing: 0.4px;
+      white-space: nowrap;
+    }
+    .action-table tbody tr:nth-child(even) { background: var(--row-alt); }
+    .action-table tbody tr:hover { background: var(--row-hover); }
+    .action-table tbody td {
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    .action-table tbody tr:last-child td { border-bottom: none; }
+    .col-num { width: 36px; color: var(--muted); font-weight: 600; }
+    .col-task { min-width: 220px; }
+    .col-owner { width: 160px; }
+    .col-due { width: 120px; color: var(--muted); }
+    .col-status { width: 90px; text-align: center; }
+
+    .owner-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--accent-light);
+      color: var(--accent);
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .owner-tag svg { width: 12px; height: 12px; }
+
+    .status-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      user-select: none;
+      transition: opacity 0.15s;
+      white-space: nowrap;
+    }
+    .status-badge:hover { opacity: 0.82; }
+    .status-open  { background: var(--amber); color: #fff; }
+    .status-closed { background: var(--green); color: #fff; }
+
+    .empty-note { color: var(--muted); font-style: italic; }
+
+    /* Print hint */
+    .print-hint {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    /* Controls bar */
+    .controls-bar {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      padding: 16px 40px;
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .btn {
+      padding: 8px 20px;
+      border-radius: 5px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      font-family: inherit;
+    }
+    .btn-print {
+      background: var(--navy);
+      color: #fff;
+    }
+    .btn-print:hover { background: var(--navy-dark); }
+
+    /* Footer */
+    .report-footer {
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted);
+      padding: 16px 40px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── PRINT ── */
+    @media print {
+      body { background: #fff; }
+      .page { box-shadow: none; border-radius: 0; margin: 0; max-width: 100%; }
+      .controls-bar, .print-hint { display: none !important; }
+      .report-body { padding: 24px 32px; }
+      .section { page-break-inside: avoid; }
+      @page { margin: 2cm; }
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 640px) {
+      .page { margin: 0; border-radius: 0; }
+      .report-header { padding: 24px 20px 20px; }
+      .report-title { font-size: 20px; }
+      .report-body { padding: 20px; }
+      .controls-bar { padding: 12px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="report-header">
+    <div class="report-badge">Minutes of Meeting</div>
+    <div class="report-company">Project Retrospective &amp; Team Sync</div>
+    <h1 class="report-title">Team Retrospective — Ways of Working</h1>
+    <div class="report-meta">
+      <span>&#128197; Date: Not specified in transcript</span>
+      <span>&#128100; Facilitated by: Oana Maria Camenita &amp; Giridhar Khokale</span>
+      <span>&#128101; ~34 Attendees</span>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="report-body">
+
+    <!-- ATTENDEES -->
+    <div class="section">
+      <div class="section-heading">Attendees</div>
+      <ul class="attendees-list">
+        <li class="attendee-chip">Giridhar Khokale</li>
+        <li class="attendee-chip">Rene Machel</li>
+        <li class="attendee-chip">Bajjuri Sushmitha</li>
+        <li class="attendee-chip">Paul Smith</li>
+        <li class="attendee-chip">Jan Ploeg</li>
+        <li class="attendee-chip">Prabha Shaw</li>
+        <li class="attendee-chip">Oana Maria Camenita</li>
+        <li class="attendee-chip">Rick van &#39;t Hof</li>
+        <li class="attendee-chip">Cristina Meniuc</li>
+        <li class="attendee-chip">Julian Handl</li>
+        <li class="attendee-chip">Talupula Naga Lakshmi</li>
+        <li class="attendee-chip">Kanchan Mishra</li>
+        <li class="attendee-chip">+ ~22 additional team members</li>
+      </ul>
+    </div>
+
+    <!-- SUMMARY -->
+    <div class="section">
+      <div class="section-heading">Meeting Summary</div>
+      <p class="summary-text">
+        This was a team-wide retrospective call attended by approximately 34 people, covering the project&#39;s ways of working. Oana Maria Camenita facilitated the closing segment, identifying three team members — Rene, Rick, and Paul — each with ideas to share and develop further. Paul Smith is compiling detailed notes into a shared Box folder for the team to review, contribute to, and critique. Giridhar Khokale has already created the Box folder and uploaded the Mentimeter exercise outcomes; he will also upload the meeting transcript and retro recording there. Team members who were unable to attend still have the opportunity to contribute their feedback offline via the shared Box folder.
+      </p>
+    </div>
+
+    <!-- KEY DECISIONS -->
+    <div class="section">
+      <div class="section-heading">Key Decisions</div>
+      <ul class="decisions-list">
+        <li>
+          <span class="decision-num">1</span>
+          <span class="decision-text">A single shared Box folder will be used as the central repository for all retro outputs, notes, recordings, and team feedback.</span>
+        </li>
+        <li>
+          <span class="decision-num">2</span>
+          <span class="decision-text">Team members who missed the live session are still welcome to submit feedback offline via the Box folder.</span>
+        </li>
+        <li>
+          <span class="decision-num">3</span>
+          <span class="decision-text">Three people (Rene Machel, Rick van &#39;t Hof, Paul Smith) will each prepare and share their individual ideas/pitches for evolving the team&#39;s ways of working, ensuring they are not duplicates.</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- ACTION ITEMS -->
+    <div class="section">
+      <div class="section-heading">Action Items</div>
+      <p class="print-hint">&#128161; Click a status badge to toggle between Open and Closed.</p>
+      <div class="table-wrapper">
+        <table class="action-table">
+          <thead>
+            <tr>
+              <th class="col-num">#</th>
+              <th class="col-task">Task</th>
+              <th class="col-owner">Owner</th>
+              <th class="col-due">Due Date</th>
+              <th class="col-status">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-num">1</td>
+              <td class="col-task">Share Box folder link with the team so everyone can access notes, review content, and contribute</td>
+              <td class="col-owner"><span class="owner-tag"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2 2H6a3 3 0 0 0-3 3v1h10v-1a3 3 0 0 0-3-3z"/></svg>Paul Smith</span></td>
+              <td class="col-due">ASAP</td>
+              <td class="col-status"><span class="status-badge status-open">Open</span></td>
+            </tr>
+            <tr>
+              <td class="col-num">2</td>
+              <td class="col-task">Write up and upload detailed notes/ideas around team ways of working into the Box folder (others can review, add to, or rip apart)</td>
+              <td class="col-owner"><span class="owner-tag"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2 2H6a3 3 0 0 0-3 3v1h10v-1a3 3 0 0 0-3-3z"/></svg>Paul Smith</span></td>
+              <td class="col-due">TBD</td>
+              <td class="col-status"><span class="status-badge status-open">Open</span></td>
+            </tr>
+            <tr>
+              <td class="col-num">3</td>
+              <td class="col-task">Upload the retro meeting recording to the shared Box folder</td>
+              <td class="col-owner"><span class="owner-tag"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2 2H6a3 3 0 0 0-3 3v1h10v-1a3 3 0 0 0-3-3z"/></svg>Giridhar Khokale</span></td>
+              <td class="col-due">TBD</td>
+              <td class="col-status"><span class="status-badge status-open">Open</span></td>
+            </tr>
+            <tr>
+              <td class="col-num">4</td>
+              <td class="col-task">Upload the consolidated Mentimeter outputs / co-pilot outputs to the shared Box folder</td>
+              <td class="col-owner"><span class="owner-tag"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2 2H6a3 3 0 0 0-3 3v1h10v-1a3 3 0 0 0-3-3z"/></svg>Giridhar Khokale</span></td>
+              <td class="col-due">TBD</td>
+              <td class="col-status"><span class="status-badge status-open">Open</span></td>
+            </tr>
+            <tr>
+              <td class="col-num">5</td>
+              <td class="col-task">Upload this meeting transcript to the shared Box folder</td>
+              <td class="col-owner"><span class="owner-tag"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2 2H6a3 3 0 0 0-3 3v1h10v-1a3 3 0 0 0-3-3z"/></svg>Giridhar Khokale</span></td>
+              <td class="col-due">TBD</td>
+              <td class="col-status"><span class="status-badge status-open">Open</span></td>
+            </tr>
+            <tr>
+              <td class="col-num">6</td>
+              <td class="col-task">Prepare individual pitch/idea for evolving ways of working (ensure not duplicating others&#39; pitches) and upload to Box folder</td>
+              <td class="col-owner"><span class="owner-tag"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2 2H6a3 3 0 0 0-3 3v1h10v-1a3 3 0 0 0-3-3z"/></svg>Rene Machel</span></td>
+              <td class="col-due">TBD</td>
+              <td class="col-status"><span class="status-badge status-open">Open</span></td>
+            </tr>
+            <tr>
+              <td class="col-num">7</td>
+              <td class="col-task">Prepare individual pitch/idea for evolving ways of working (ensure not duplicating others&#39; pitches) and upload to Box folder</td>
+              <td class="col-owner"><span class="owner-tag"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2 2H6a3 3 0 0 0-3 3v1h10v-1a3 3 0 0 0-3-3z"/></svg>Rick van &#39;t Hof</span></td>
+              <td class="col-due">TBD</td>
+              <td class="col-status"><span class="status-badge status-open">Open</span></td>
+            </tr>
+            <tr>
+              <td class="col-num">8</td>
+              <td class="col-task">Team members who missed the live retro to submit offline feedback via the Box folder</td>
+              <td class="col-owner"><span class="owner-tag"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2 2H6a3 3 0 0 0-3 3v1h10v-1a3 3 0 0 0-3-3z"/></svg>All absent members</span></td>
+              <td class="col-due">TBD</td>
+              <td class="col-status"><span class="status-badge status-open">Open</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /report-body -->
+
+  <!-- CONTROLS -->
+  <div class="controls-bar">
+    <button class="btn btn-print" onclick="window.print()">&#128438; Print / Save as PDF</button>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="report-footer">
+    Generated by Meeting Minutes Generator &middot; Report date: <span id="gen-date"></span>
+  </div>
+
+</div><!-- /page -->
+
+<script>
+  // Set generated date
+  document.getElementById('gen-date').textContent = new Date().toLocaleDateString('en-GB', {day:'numeric',month:'long',year:'numeric'});
+
+  // Status badge toggle
+  document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('status-badge')) {
+      var isOpen = e.target.classList.contains('status-open');
+      e.target.classList.toggle('status-open', !isOpen);
+      e.target.classList.toggle('status-closed', isOpen);
+      e.target.textContent = isOpen ? 'Closed' : 'Open';
+    }
+  });
+</script>
+
+</body>
+</html>

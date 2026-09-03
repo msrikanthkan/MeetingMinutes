@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meeting Minutes Generator</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='6' y='2' width='20' height='28' rx='2' fill='%231a3a5c'/><rect x='9' y='8' width='14' height='2' rx='1' fill='%23ffffff'/><rect x='9' y='13' width='14' height='2' rx='1' fill='%23ffffff'/><rect x='9' y='18' width='10' height='2' rx='1' fill='%23ffffff'/><rect x='9' y='23' width='7' height='2' rx='1' fill='%23cadbee'/></svg>" />
+  <style>
+    :root {
+      --primary: #1a3a5c;
+      --primary-hover: #132b45;
+      --accent: #2e6da4;
+      --accent-light: #eaf1f8;
+      --bg: #f4f6f9;
+      --card-bg: #ffffff;
+      --text-main: #222b35;
+      --text-muted: #5f6c7b;
+      --border: #d2d8e0;
+      --border-focus: #2e6da4;
+      --radius: 6px;
+      --shadow: 0 2px 8px rgba(26, 58, 92, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    .app-header {
+      background-color: var(--primary);
+      color: #ffffff;
+      padding: 1rem 2rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    }
+
+    .app-header-inner {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .app-title {
+      font-size: 1.35rem;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+
+    .app-tagline {
+      font-size: 0.85rem;
+      color: #cadbee;
+    }
+
+    /* Container */
+    .main-container {
+      max-width: 1000px;
+      width: 100%;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      flex: 1;
+    }
+
+    /* Card Panels */
+    .panel-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1.75rem;
+      margin-bottom: 2rem;
+    }
+
+    .panel-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--accent-light);
+    }
+
+    /* Forms & Grid Layout */
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 0.4rem;
+    }
+
+    .form-label .optional-note {
+      font-weight: normal;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+
+    .form-input,
+    .form-textarea {
+      width: 100%;
+      padding: 0.65rem 0.8rem;
+      font-size: 0.95rem;
+      font-family: inherit;
+      color: var(--text-main);
+      background-color: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .form-input:focus,
+    .form-textarea:focus {
+      outline: none;
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(46, 109, 164, 0.15);
+    }
+
+    .form-textarea {
+      resize: vertical;
+    }
+
+    #transcriptInput {
+      min-height: 180px;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+
+    #attendeesInput {
+      min-height: 90px;
+      font-size: 0.9rem;
+    }
+
+    .file-upload-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+    }
+
+    .file-upload-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.45rem 0.9rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--accent);
+      background: var(--accent-light);
+      border: 1px solid #bed6ee;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .file-upload-btn:hover {
+      background-color: #dbeaf7;
+      color: var(--primary);
+    }
+
+    .file-upload-input {
+      display: none;
+    }
+
+    .file-status-text {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .metadata-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+
+    @media (max-width: 768px) {
+      .metadata-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .app-header {
+        padding: 0.75rem 1rem;
+      }
+
+      .app-title {
+        font-size: 1.1rem;
+      }
+
+      .app-tagline {
+        font-size: 0.75rem;
+      }
+
+      .main-container {
+        margin: 1rem auto;
+        padding: 0 0.75rem;
+      }
+
+      .panel-card {
+        padding: 1.25rem;
+      }
+
+      .report-header {
+        padding: 1.25rem;
+        margin: -1.25rem -1.25rem 1.25rem;
+      }
+
+      .report-meeting-title {
+        font-size: 1.5rem;
+      }
+
+      .actions-row {
+        flex-direction: column;
+      }
+
+      .actions-row .btn {
+        width: 100%;
+      }
+
+      #reportControls {
+        flex-direction: column;
+      }
+
+      #reportControls .btn {
+        width: 100%;
+      }
+
+      .action-table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+    }
+
+    /* Actions row */
+    .actions-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 1.5rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.7rem 1.5rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: var(--radius);
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.15s ease;
+    }
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+      border-color: var(--primary-hover);
+    }
+
+    .btn-outline {
+      background-color: transparent;
+      color: var(--text-muted);
+      border-color: var(--border);
+    }
+
+    .btn-outline:hover {
+      background-color: #f0f2f5;
+      color: var(--text-main);
+      border-color: #bcc3cd;
+    }
+
+    /* Report Section (Hidden initially) */
+    #reportSection {
+      display: none;
+    }
+
+    #reportControls {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .report-header {
+      background: var(--primary);
+      color: #ffffff;
+      padding: 2rem;
+      margin: -1.75rem -1.75rem 1.75rem;
+      border-radius: var(--radius) var(--radius) 0 0;
+    }
+
+    .report-label {
+      display: inline-block;
+      padding: 0.2rem 0.55rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: #ffffff;
+      border: 1px solid #8facca;
+      border-radius: 3px;
+    }
+
+    .report-company {
+      margin-top: 1rem;
+      color: #cadbee;
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .report-meeting-title {
+      margin-top: 0.2rem;
+      font-size: 2rem;
+      line-height: 1.2;
+    }
+
+    .report-meta {
+      margin-top: 0.75rem;
+      font-size: 0.9rem;
+      color: #e2ebf4;
+    }
+
+    .report-block {
+      margin-bottom: 1.75rem;
+    }
+
+    .report-section-title {
+      margin-bottom: 0.85rem;
+      padding-bottom: 0.4rem;
+      color: var(--primary);
+      font-size: 1.15rem;
+      border-bottom: 2px solid var(--accent);
+    }
+
+    .attendee-list,
+    .decision-list {
+      padding-left: 1.4rem;
+    }
+
+    .attendee-list li {
+      margin-bottom: 0.35rem;
+    }
+
+    .decision-list {
+      list-style-position: outside;
+    }
+
+    .decision-list li {
+      margin-bottom: 0.65rem;
+      padding: 0.55rem 0.75rem;
+      border-left: 3px solid var(--primary);
+      background: #f8fafc;
+    }
+
+    .empty-report-content {
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    .action-items-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    .action-items-table th,
+    .action-items-table td {
+      padding: 0.7rem 0.75rem;
+      text-align: left;
+      vertical-align: top;
+      border: 1px solid var(--border);
+    }
+
+    .action-items-table th {
+      color: #ffffff;
+      background: var(--primary);
+      font-weight: 600;
+    }
+
+    .action-items-table tbody tr:nth-child(even) {
+      background: #f4f6f9;
+    }
+
+    .action-items-table tbody tr:hover {
+      background: #e8edf3;
+    }
+
+    .status-badge {
+      display: inline-block;
+      min-width: 4.4rem;
+      padding: 0.25rem 0.55rem;
+      color: #ffffff;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-align: center;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+
+    .status-open {
+      background: #f59e0b;
+    }
+
+    .status-closed {
+      background: #16a34a;
+    }
+
+    .status-badge:hover {
+      opacity: 0.85;
+    }
+
+    /* Error Banner */
+    #errorBanner {
+      display: none;
+      padding: 0.75rem 1rem;
+      background: #fef3c7;
+      border: 1px solid #f59e0b;
+      border-radius: var(--radius);
+      color: #92400e;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+
+    @media print {
+      @page {
+        margin: 2cm;
+      }
+
+      body {
+        background: #ffffff;
+      }
+
+      #inputPanel,
+      #reportControls,
+      .app-header {
+        display: none !important;
+      }
+
+      .main-container {
+        max-width: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      #reportSection {
+        display: block !important;
+        width: 100%;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+      }
+
+      .report-header {
+        margin: 0 0 1.5rem;
+        border-radius: 0;
+      }
+
+      .report-block {
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+
+      .action-items-table th,
+      .action-items-table td {
+        border-color: #aab3bf;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header Bar -->
+  <header class="app-header">
+    <div class="app-header-inner">
+      <div class="app-title">Meeting Minutes Generator</div>
+      <div class="app-tagline">Minutes of Meeting (MOM) Automation</div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-container">
+
+    <!-- Input Panel -->
+    <section id="inputPanel" class="panel-card">
+      <h2 class="panel-title">Meeting Transcript & Details</h2>
+
+      <!-- Error Banner -->
+      <div id="errorBanner"></div>
+
+      <!-- Transcript Area -->
+      <div class="form-group">
+        <label for="transcriptInput" class="form-label">Paste Transcript</label>
+        <textarea id="transcriptInput" class="form-textarea" placeholder="Paste your raw meeting transcript, notes, or conversation here..."></textarea>
+
+        <div class="file-upload-row">
+          <label for="transcriptFile" class="file-upload-btn">
+            Or upload a .txt file
+          </label>
+          <input type="file" id="transcriptFile" class="file-upload-input" accept=".txt,.text,.md">
+          <span id="fileStatusText" class="file-status-text">No file chosen</span>
+        </div>
+      </div>
+
+      <!-- Metadata Fields -->
+      <div class="metadata-grid">
+        <div class="form-group">
+          <label for="companyNameInput" class="form-label">Company / Organization <span class="optional-note">(optional)</span></label>
+          <input type="text" id="companyNameInput" class="form-input" placeholder="e.g. Acme Corporation">
+        </div>
+
+        <div class="form-group">
+          <label for="meetingTitleInput" class="form-label">Meeting Title</label>
+          <input type="text" id="meetingTitleInput" class="form-input" placeholder="e.g. Sprint Planning & Architecture Review">
+        </div>
+
+        <div class="form-group">
+          <label for="meetingDateInput" class="form-label">Meeting Date</label>
+          <input type="date" id="meetingDateInput" class="form-input">
+        </div>
+      </div>
+
+      <!-- Attendees -->
+      <div class="form-group" style="margin-top: 1rem;">
+        <label for="attendeesInput" class="form-label">Attendees <span class="optional-note">(one per line &mdash; auto-detected if left blank)</span></label>
+        <textarea id="attendeesInput" class="form-textarea" placeholder="Alice Smith&#10;Bob Jones&#10;Carol Taylor"></textarea>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="actions-row">
+        <button id="generateBtn" type="button" class="btn btn-primary">Generate MOM</button>
+        <button id="clearBtn" type="button" class="btn btn-outline">Clear</button>
+      </div>
+    </section>
+
+    <!-- Report Section (Hidden by default) -->
+    <section id="reportSection" class="panel-card">
+      <!-- Report rendered content will be injected here in Sub-Task 3 -->
+    </section>
+
+  </main>
+
+  <script>
+    // --- Elements ---
+    const transcriptInput = document.getElementById('transcriptInput');
+    const transcriptFile = document.getElementById('transcriptFile');
+    const fileStatusText = document.getElementById('fileStatusText');
+    const companyNameInput = document.getElementById('companyNameInput');
+    const meetingTitleInput = document.getElementById('meetingTitleInput');
+    const meetingDateInput = document.getElementById('meetingDateInput');
+    const attendeesInput = document.getElementById('attendeesInput');
+    const generateBtn = document.getElementById('generateBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const reportSection = document.getElementById('reportSection');
+    const inputPanel = document.getElementById('inputPanel');
+
+    // Default meeting date to today
+    meetingDateInput.value = new Date().toISOString().split('T')[0];
+
+    const errorBanner = document.getElementById('errorBanner');
+
+    function showError(msg) {
+      errorBanner.textContent = msg;
+      errorBanner.style.display = 'block';
+    }
+
+    function hideError() {
+      errorBanner.style.display = 'none';
+    }
+
+    // Hide error banner as soon as the user types in the textarea
+    transcriptInput.addEventListener('input', hideError);
+
+    // --- File Upload via FileReader ---
+    transcriptFile.addEventListener('change', function (e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      // Validate file type: must be text/plain, text/markdown, or .txt/.md extension
+      const validTypes = ['text/plain', 'text/markdown', 'text/x-markdown'];
+      const validExts = ['.txt', '.md', '.text'];
+      const ext = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
+      if (!validTypes.includes(file.type) && !validExts.includes(ext)) {
+        showError('⚠ Unsupported file type. Please upload a plain text (.txt or .md) file.');
+        transcriptFile.value = '';
+        fileStatusText.textContent = 'No file chosen';
+        return;
+      }
+
+      hideError();
+      fileStatusText.textContent = file.name;
+
+      const reader = new FileReader();
+      reader.onload = function (event) {
+        transcriptInput.value = event.target.result;
+      };
+      reader.onerror = function () {
+        showError('⚠ Failed to read the selected file.');
+      };
+      reader.readAsText(file);
+    });
+
+    // --- Clear Action ---
+    clearBtn.addEventListener('click', function () {
+      transcriptInput.value = '';
+      transcriptFile.value = '';
+      fileStatusText.textContent = 'No file chosen';
+      companyNameInput.value = '';
+      meetingTitleInput.value = '';
+      meetingDateInput.value = new Date().toISOString().split('T')[0];
+      attendeesInput.value = '';
+      reportSection.style.display = 'none';
+      reportSection.innerHTML = '';
+      inputPanel.style.display = 'block';
+    });
+
+    // --- Generate Button Click ---
+    generateBtn.addEventListener('click', function () {
+      const text = transcriptInput.value;
+
+      // Validate: transcript must not be blank
+      if (!text.trim()) {
+        showError('⚠ Please paste or upload a meeting transcript before generating.');
+        transcriptInput.focus();
+        return;
+      }
+
+      hideError();
+      const metadata = {
+        company: companyNameInput.value.trim(),
+        title: meetingTitleInput.value.trim() || 'Meeting Minutes',
+        date: meetingDateInput.value,
+        attendees: attendeesInput.value.split('\n').map(s => s.trim()).filter(Boolean)
+      };
+
+      const parsed = parseTranscript(text);
+
+      // Pre-populate attendees textarea only if it is currently empty
+      if (attendeesInput.value.trim() === '' && parsed.attendees.length > 0) {
+        attendeesInput.value = parsed.attendees.join('\n');
+        // Refresh metadata with the newly populated attendees
+        metadata.attendees = parsed.attendees;
+      }
+
+      renderReport(metadata, parsed);
+    });
+
+    // ---------------------------------------------------------------------------
+    // parseTranscript(text) → { attendees, decisions, actionItems, summary }
+    // ---------------------------------------------------------------------------
+    function parseTranscript(text) {
+      const lines = text.split('\n');
+
+      return {
+        attendees:   detectSpeakers(lines),
+        decisions:   extractDecisions(text, lines),
+        actionItems: extractActionItems(text, lines),
+        summary:     extractSummary(text, lines)
+      };
+    }
+
+    // --- Speaker / Attendee Detection ---
+    function detectSpeakers(lines) {
+      const SPEAKER_RE = /^([A-Z][a-zA-Z .'-]+):\s/;
+      const seen = new Set();
+      for (const line of lines) {
+        const m = line.match(SPEAKER_RE);
+        if (m) {
+          const name = m[1].trim();
+          // Skip common label prefixes that are not names
+          if (!isLikelyLabel(name)) seen.add(name);
+        }
+      }
+      return Array.from(seen);
+    }
+
+    // Words that look like structured labels, not speaker names
+    function isLikelyLabel(name) {
+      return /^(ACTION|TODO|TASK|FOLLOW UP|DECIDED|AGREED|RESOLVED|DECISION|NOTE|SUMMARY|DATE|TIME|LOCATION|SUBJECT|AGENDA)$/i.test(name);
+    }
+
+    // --- Decision Extraction ---
+    function extractDecisions(text, lines) {
+      const decisions = [];
+      const STRUCTURED_LINE_RE = /^(?:DECIDED|AGREED|RESOLVED|DECISION)\s*:\s*/i;
+
+      // 1. Structured: lines starting with a decision keyword
+      for (const line of lines) {
+        if (STRUCTURED_LINE_RE.test(line)) {
+          const clean = line.replace(STRUCTURED_LINE_RE, '').trim();
+          if (clean) decisions.push(clean);
+        }
+      }
+
+      // 2. Structured within a sentence (e.g. "DECIDED: we move to cloud")
+      //    — already caught above by line scan, but also handle mid-line colon forms
+      const MID_STRUCTURED_RE = /(?:DECIDED|AGREED|RESOLVED|DECISION)\s*:\s*([^.!?\n]+[.!?]?)/gi;
+      let m;
+      while ((m = MID_STRUCTURED_RE.exec(text)) !== null) {
+        const candidate = m[1].trim();
+        if (candidate && !decisions.includes(candidate)) {
+          decisions.push(candidate);
+        }
+      }
+
+      // 3. Fuzzy fallback if nothing structured was found
+      if (decisions.length === 0) {
+        const FUZZY_PHRASES = [
+          /we agreed\b/i,
+          /it was decided\b/i,
+          /we will\b/i,
+          /we resolved\b/i,
+          /has been agreed\b/i,
+          /it is agreed\b/i
+        ];
+        const sentences = splitSentences(text);
+        for (const sentence of sentences) {
+          if (FUZZY_PHRASES.some(re => re.test(sentence))) {
+            const clean = sentence.trim();
+            if (clean && !decisions.includes(clean)) decisions.push(clean);
+          }
+        }
+      }
+
+      return decisions;
+    }
+
+    // --- Action Item Extraction ---
+    function extractActionItems(text, lines) {
+      const items = [];
+      const STRUCTURED_LINE_RE = /^(?:ACTION|TODO|FOLLOW UP|TASK)\s*:\s*/i;
+
+      // 1. Structured lines
+      for (const line of lines) {
+        if (STRUCTURED_LINE_RE.test(line)) {
+          const rest = line.replace(STRUCTURED_LINE_RE, '').trim();
+          if (rest) items.push(parseActionLine(rest));
+        }
+      }
+
+      // 2. Fuzzy fallback if nothing structured was found
+      if (items.length === 0) {
+        const MODAL_RE = /\b(will|needs to|need to|should|must|is responsible for)\b/i;
+        const NAME_TOKEN_RE = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\b/;
+        const sentences = splitSentences(text);
+        for (const sentence of sentences) {
+          if (MODAL_RE.test(sentence) && NAME_TOKEN_RE.test(sentence)) {
+            const clean = sentence.trim();
+            if (clean) items.push(parseActionLine(clean));
+          }
+        }
+      }
+
+      return items;
+    }
+
+    // Parse a single action line into { task, owner, dueDate }
+    function parseActionLine(line) {
+      let owner = '';
+      let dueDate = '';
+      let task = line;
+
+      // Owner: "Owner: Name" or "assigned to Name" or "@Name"
+      const ownerPatterns = [
+        /\bowner\s*:\s*([A-Z][a-zA-Z .'-]+)/i,
+        /\bassigned\s+to\s+([A-Z][a-zA-Z .'-]+)/i,
+        /@([A-Za-z][a-zA-Z0-9._-]+)/
+      ];
+      for (const re of ownerPatterns) {
+        const m = line.match(re);
+        if (m) { owner = m[1].trim(); break; }
+      }
+
+      // Fallback: first capitalised name token (two-word or single capitalised word)
+      if (!owner) {
+        const m = line.match(/\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)\b/);
+        if (m) owner = m[1].trim();
+      }
+      if (!owner) {
+        const m = line.match(/\b([A-Z][a-z]{2,})\b/);
+        if (m && !isLikelyLabel(m[1])) owner = m[1].trim();
+      }
+
+      // Due date: "Due: …" or "by …" or "before …" or "deadline: …"
+      const dueDatePatterns = [
+        /\bdue\s*:\s*([^\n,;]+)/i,
+        /\bdeadline\s*:\s*([^\n,;]+)/i,
+        /\bby\s+(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}|\d{4}-\d{2}-\d{2}|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+\d{1,2}(?:st|nd|rd|th)?,?\s*\d{0,4}|next\s+\w+|end\s+of\s+\w+|(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)[a-z]*)/i,
+        /\bbefore\s+(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}|\d{4}-\d{2}-\d{2}|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+\d{1,2}(?:st|nd|rd|th)?,?\s*\d{0,4}|next\s+\w+|end\s+of\s+\w+|(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)[a-z]*)/i
+      ];
+      for (const re of dueDatePatterns) {
+        const m = line.match(re);
+        if (m) { dueDate = m[1].trim().replace(/[,;]$/, ''); break; }
+      }
+
+      // Clean known metadata tokens from the task text
+      task = task
+        .replace(/\bowner\s*:\s*[A-Z][a-zA-Z .'-]+/gi, '')
+        .replace(/\bassigned\s+to\s+[A-Z][a-zA-Z .'-]+/gi, '')
+        .replace(/@[A-Za-z][a-zA-Z0-9._-]+/g, '')
+        .replace(/\bdue\s*:\s*[^\n,;]+/gi, '')
+        .replace(/\bdeadline\s*:\s*[^\n,;]+/gi, '')
+        .replace(/\s{2,}/g, ' ')
+        .trim()
+        .replace(/[,;]$/, '');
+
+      return { task, owner, dueDate };
+    }
+
+    // --- Summary Extraction ---
+    function extractSummary(text, lines) {
+      // Strip speaker labels (e.g. "Alice: " at line start)
+      const SPEAKER_PREFIX_RE = /^[A-Z][a-zA-Z .'-]+:\s*/;
+      const stripped = lines
+        .map(l => l.replace(SPEAKER_PREFIX_RE, '').trim())
+        .filter(Boolean)
+        .join(' ');
+
+      const sentences = splitSentences(stripped);
+      const meaningful = sentences.filter(s => s.trim().length >= 10);
+      return meaningful.slice(0, 5).join(' ');
+    }
+
+    // --- Utility: split text into sentences ---
+    function splitSentences(text) {
+      // Split on . ! ? followed by whitespace or end-of-string, keeping the delimiter
+      return text
+        .split(/(?<=[.!?])\s+/)
+        .map(s => s.trim())
+        .filter(Boolean);
+    }
+
+    // --- Report Renderer ---
+    function renderReport(metadata, parsed) {
+      const escapeHtml = function (value) {
+        return String(value || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      };
+      const attendees = Array.isArray(metadata.attendees) ? metadata.attendees : [];
+      const decisions = Array.isArray(parsed.decisions) ? parsed.decisions : [];
+      const actionItems = Array.isArray(parsed.actionItems) ? parsed.actionItems : [];
+      const attendeesHtml = attendees.length
+        ? `<ul class="attendee-list">${attendees.map(attendee => `<li>${escapeHtml(attendee)}</li>`).join('')}</ul>`
+        : '<p class="empty-report-content">Not specified</p>';
+      const summaryHtml = parsed.summary
+        ? `<p>${escapeHtml(parsed.summary)}</p>`
+        : '<p class="empty-report-content">No summary available</p>';
+      const decisionsHtml = decisions.length
+        ? `<ol class="decision-list">${decisions.map(decision => `<li>${escapeHtml(decision)}</li>`).join('')}</ol>`
+        : '<p class="empty-report-content">No decisions identified</p>';
+      const actionRowsHtml = actionItems.length
+        ? actionItems.map((item, index) => `
+            <tr>
+              <td>${index + 1}</td>
+              <td>${escapeHtml(item.task)}</td>
+              <td>${escapeHtml(item.owner) || '&mdash;'}</td>
+              <td>${escapeHtml(item.dueDate) || '&mdash;'}</td>
+              <td><span class="status-badge status-open">Open</span></td>
+            </tr>`).join('')
+        : '<tr><td colspan="5" class="empty-report-content">No action items identified</td></tr>';
+
+      reportSection.innerHTML = `
+        <div id="reportControls">
+          <button type="button" class="btn btn-outline" data-report-action="back">&larr; Back / Edit</button>
+          <button type="button" class="btn btn-primary" data-report-action="print">&#128424; Print / Save as PDF</button>
+        </div>
+        <header class="report-header">
+          <span class="report-label">MINUTES OF MEETING</span>
+          <p class="report-company">${escapeHtml(metadata.company) || 'Company / Organization'}</p>
+          <h1 class="report-meeting-title">${escapeHtml(metadata.title) || 'Meeting Minutes'}</h1>
+          <p class="report-meta">${escapeHtml(metadata.date) || 'Date not specified'} | Prepared: Meeting Organizer</p>
+        </header>
+        <section class="report-block">
+          <h2 class="report-section-title">Attendees</h2>
+          ${attendeesHtml}
+        </section>
+        <section class="report-block">
+          <h2 class="report-section-title">Meeting Summary</h2>
+          ${summaryHtml}
+        </section>
+        <section class="report-block">
+          <h2 class="report-section-title">Key Decisions</h2>
+          ${decisionsHtml}
+        </section>
+        <section class="report-block">
+          <h2 class="report-section-title">Action Items</h2>
+          <div class="action-table-wrapper">
+            <table class="action-items-table">
+              <thead>
+                <tr><th>#</th><th>Task</th><th>Owner</th><th>Due Date</th><th>Status</th></tr>
+              </thead>
+              <tbody>${actionRowsHtml}</tbody>
+            </table>
+          </div>
+        </section>`;
+
+      reportSection.onclick = function (event) {
+        if (event.target.classList.contains('status-badge')) {
+          event.target.classList.toggle('status-open');
+          event.target.classList.toggle('status-closed');
+          event.target.textContent = event.target.classList.contains('status-closed') ? 'Closed' : 'Open';
+        }
+
+        if (event.target.dataset.reportAction === 'back') {
+          reportSection.style.display = 'none';
+          reportSection.innerHTML = '';
+          inputPanel.style.display = 'block';
+        }
+
+        if (event.target.dataset.reportAction === 'print') {
+          window.print();
+        }
+      };
+
+      reportSection.style.display = 'block';
+      inputPanel.style.display = 'none';
+    }
+  </script>
+</body>
+</html>
